@@ -114,7 +114,7 @@ export default function PayPreview() {
   const ask = (event: FormEvent) => {
     event.preventDefault();
     const text = request.trim();
-    if (text) run("Reading the meeting", () => converse(text, proposeDirect));
+    if (text) run("Working on it", () => converse(text, proposeDirect));
   };
 
   const approveAndSend = () => run("Sending in the PayPal sandbox", async () => {
@@ -148,7 +148,7 @@ export default function PayPreview() {
         <header className="space-y-2">
           <p className="text-sm font-semibold text-[var(--muted)]">MemoValet Pay · PayPal sandbox, test money only · fictional sample</p>
           <h1 className="font-[family-name:var(--font-display)] text-3xl font-extrabold tracking-tight">Turn what was agreed in a meeting into a paid invoice</h1>
-          <p className="text-[var(--muted)]">The AI assistant finds the payment you agreed, drafts the invoice and waits. Nothing is sent until you approve the exact amount and payer.</p>
+          <p className="text-[var(--muted)]">The AI assistant proposes the invoice agreed in the meeting, then waits. Nothing is sent until you approve the exact amount and payer.</p>
         </header>
 
         <section aria-label="Assistant" className="rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)] p-5">
