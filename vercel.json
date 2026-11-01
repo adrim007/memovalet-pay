@@ -1,0 +1,19 @@
+{
+  "regions": [
+    "hnd1"
+  ],
+  "crons": [
+    {
+      "path": "/api/action-items/remind",
+      "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/live/close-stale",
+      "schedule": "0 15 * * *"
+    },
+    {
+      "path": "/api/errors/digest",
+      "schedule": "30 20 * * *"
+    }
+  ]
+}

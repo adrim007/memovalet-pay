@@ -1,0 +1,142 @@
+.memo-marketing-stage .memo-marketing-shell.memo-starlight-shell { background: #080b18; }
+.memo-starlight-shell > .memo-home-nav { background: transparent; border-color: transparent; z-index: 10; }
+.memo-starlight { position: relative; isolation: isolate; padding: 56px 40px 28px; }
+.memo-starlight-sky {
+  position: absolute; z-index: -1; inset: -100px 0 -50px;
+  background: url('/assets/marketing-starlight.png') center / cover no-repeat;
+  mask-image: linear-gradient(transparent, #000 12%, #000 78%, transparent);
+  pointer-events: none;
+}
+.memo-starlight-inner { max-width: 1320px; margin: auto; display: grid; grid-template-columns: 1fr 1.1fr; align-items: center; gap: 24px; min-height: 590px; }
+.memo-starlight-copy { position: relative; z-index: 2; padding-block: 24px; }
+.memo-starlight-label { font-size: 14px; font-weight: 600; color: #c1adfa; margin-bottom: 24px; letter-spacing: 0; }
+.memo-starlight h1 { font-family: var(--font-display), sans-serif; font-size: 56px; line-height: 1.08; font-weight: 650; letter-spacing: 0; color: #fafbff; margin: 0; }
+.memo-starlight h1 span { color: #c4adff; }
+.memo-starlight-description { max-width: 510px; font-size: 18px; line-height: 1.7; color: #c8ccdf; margin: 26px 0 30px; }
+.memo-starlight-cta { display: inline-flex; align-items: center; justify-content: center; gap: 16px; min-height: 54px; padding: 14px 25px; border-radius: 28px; background: #7755ef; border: 1px solid #ac90ff; color: white; font-size: 16px; font-weight: 600; transition: background 180ms, box-shadow 180ms; }
+.memo-starlight-cta:hover { background: #8965ff; box-shadow: 0 0 30px #8e6bff50; }
+.memo-starlight-cta:focus-visible { outline: 2px solid #fff; outline-offset: 5px; }
+.memo-starlight-mascot { position: relative; width: min(100%, 560px); aspect-ratio: 1; display: grid; place-items: center; justify-self: center; }
+.memo-starlight-elephant { width: 100%; height: 100%; filter: drop-shadow(0 0 24px #ae8cff65) drop-shadow(0 0 64px #6785ff66); }
+.memo-starlight-next { text-align: center; margin: 28px auto 0; padding-block: 20px; color: #c7bfdf; font-size: 16px; font-weight: 500; }
+.memo-starlight--resources .memo-starlight-sky { transform: scaleX(-1); }
+.memo-starlight--resources .memo-starlight-inner { grid-template-columns: 1.1fr 1fr; }
+.memo-starlight--resources .memo-starlight-mascot { grid-column: 1; grid-row: 1; }
+.memo-starlight--resources .memo-starlight-copy { grid-column: 2; grid-row: 1; }
+.memo-home-stage .memo-home-shell.memo-starlight-shell { background: #080b18; }
+.memo-overview-starlight { position: relative; isolation: isolate; }
+.memo-overview-product { position: relative; max-width: 1320px; margin: auto; padding: 0 40px 60px; }
+.memo-overview-product .mf-featured-resource { margin-top: 0; }
+.memo-starlight--resources { padding-top: 24px; }
+.memo-starlight--resources .memo-starlight-inner { grid-template-columns: 1.15fr 1fr; gap: 52px; min-height: 610px; }
+.memo-starlight--resources .memo-starlight-mascot { width: min(100%, 460px); }
+.memo-starlight--resources .memo-starlight-elephant img { mask-image: none; }
+.memo-starlight--overview .memo-starlight-elephant img { mask-image: none; }
+.memo-starlight--resources .memo-starlight-sky { opacity: .65; filter: blur(3px); }
+.memo-starlight--resources .memo-starlight-cta { background: #b399fa; color: #171028; }
+.memo-starlight--resources .memo-starlight-cta:hover { background: #c8b3ff; }
+.memo-starlight--overview h1 { font-size: 48px; }
+.memo-starlight--overview .memo-starlight-sky,
+.memo-starlight--integrations .memo-starlight-sky { opacity: .75; filter: blur(2px); }
+.memo-starlight-detail { margin-top: 24px; font-size: 13px; line-height: 1.8; color: #c7bfdf; }
+.memo-starlight-detail span { padding-inline: 8px; color: #8d819f; }
+.memo-starlight-connections { max-width: 1100px; margin: 24px auto 8px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 24px 48px; padding-block: 24px; border-block: 1px solid #ffffff16; }
+.memo-starlight-connections a { display: flex; align-items: center; gap: 12px; color: #d2d5e4; font-size: 14px; min-height: 44px; }
+.memo-starlight-connections a:hover { color: white; }
+.memo-starlight-connections a:focus-visible { outline: 2px solid #c4adff; outline-offset: 6px; }
+@media (min-width: 1600px) { .memo-starlight-inner { min-height: 630px; } }
+@media (max-width: 1350px) {
+  .memo-starlight h1 { font-size: 46px; }
+  .memo-starlight-inner { min-height: 520px; }
+  .memo-starlight--overview h1 { font-size: 40px; }
+  .memo-starlight--resources .memo-starlight-inner { min-height: 540px; gap: 32px; }
+}
+@media (max-width: 760px) {
+  .memo-starlight { padding: 22px 24px 12px; }
+  .memo-starlight-inner, .memo-starlight--resources .memo-starlight-inner { display: flex; flex-direction: column; gap: 0; min-height: 0; }
+  .memo-starlight-copy { text-align: center; width: 100%; padding: 18px 0 0; }
+  .memo-starlight-label { margin-bottom: 18px; font-size: 13px; }
+  .memo-starlight h1 { font-size: 30px; line-height: 1.1; }
+  .memo-starlight--resources .memo-starlight-inner { min-height: 0; gap: 0; }
+  .memo-starlight--resources .memo-starlight-mascot { width: min(100%, 240px); margin-block: 12px 0; }
+  .memo-overview-product { padding: 0 24px 32px; }
+  .memo-starlight-connections { gap: 12px 24px; margin-top: 0; }
+  .memo-starlight-connections a { font-size: 12px; gap: 8px; }
+  .memo-starlight-description { margin: 20px auto 22px; font-size: 16px; line-height: 1.6; }
+  .memo-starlight-mascot { width: min(100%, 260px); margin: 4px auto -8px; }
+  .memo-starlight-sky { background-size: auto 100%; background-position: 70% center; inset: 48% -60px 0; }
+  .memo-starlight--resources .memo-starlight-sky { transform: none; }
+  .memo-starlight-next { font-size: 14px; margin-top: 0; padding-block: 12px; }
+}
+@media (max-width: 370px) { .memo-starlight h1 { font-size: 28px; } .memo-starlight { padding-inline: 18px; } }
+
+/* One continuous base removes the boundary between the hero and lower page. */
+.memo-home-stage,
+.memo-home-stage .memo-home-shell.memo-starlight-shell,
+.memo-home-stage .memo-home-lower { background: #080b18; }
+.memo-home-shell .memo-overview-product .mf-featured-resource { border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+.memo-approved-hero { position: relative; isolation: isolate; aspect-ratio: 1586 / 880; min-height: 620px; }
+.memo-approved-art { position: absolute; inset: -80px 0 0; z-index: -1; mask-image: linear-gradient(#000 84%, transparent 100%); }
+.memo-approved-art img { object-fit: cover; object-position: center; }
+.memo-approved-copy { position: absolute; left: 55.5%; right: 4%; top: 22%; }
+.memo-approved-copy h1 { font-family: var(--font-display), sans-serif; font-size: 48px; font-weight: 650; line-height: 1.1; letter-spacing: 0; color: #fafbff; }
+.memo-approved-copy h1 span { color: #bb99ff; }
+.memo-approved-copy .memo-starlight-description { max-width: 550px; }
+.memo-approved-copy .memo-starlight-cta { background: #b399fa; color: #171028; }
+.memo-approved-copy .memo-starlight-cta:hover { background: #c8b3ff; }
+/* Start free, beside a quieter way to read on first. */
+.memo-hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px; }
+.memo-hero-secondary { display: inline-flex; align-items: center; min-height: 48px; padding: 0 6px; color: #e4ddff; font-size: 16px; font-weight: 600; text-decoration: underline; text-decoration-color: #bb99ff66; text-underline-offset: 6px; transition: color 180ms, text-decoration-color 180ms; }
+.memo-hero-secondary:hover { color: #fff; text-decoration-color: #bb99ff; }
+.memo-hero-secondary:focus-visible { outline: 2px solid #fff; outline-offset: 4px; border-radius: 6px; }
+/* Three facts under the buttons, each one true today. They sit on the
+   bright horizon, so each gets its own dark pill to stay readable. */
+.memo-hero-proof { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; padding: 0; list-style: none; }
+.memo-hero-proof li { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px 6px 10px; border-radius: 999px; border: 1px solid #ffffff24; background: #0a0a1ed9; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); color: #f4f1ff; font-size: 13.5px; font-weight: 500; white-space: nowrap; box-shadow: 0 6px 20px #05050f66; }
+.memo-hero-proof li::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #bb99ff; box-shadow: 0 0 10px #bb99ffaa; }
+/* On the home page every section heading shares one voice: light, with the
+   second half in lilac. These two were written for other pages and shouted
+   over the sections around them. */
+.memo-home-lower #featured-resource-heading,
+.memo-home-lower #summary-heading { font-family: var(--font-display), sans-serif; font-size: clamp(1.875rem, 3.6vw, 3rem); font-weight: 300; line-height: 1.16; letter-spacing: -0.045em; color: #fff; text-wrap: balance; }
+.memo-home-lower #featured-resource-heading span,
+.memo-home-lower #summary-heading span { color: #bb99ff; }
+.memo-starlight--integrations .memo-starlight-sky { opacity: .25; }
+.memo-integration-refined { --memo-flow-size: 520px; --memo-orbit-tilt: -16deg; }
+.memo-integration-refined .memo-integration-flow-line { border-color: #b39de580; box-shadow: 0 0 18px #a393fa22; }
+.memo-integration-refined .memo-integration-flow-center { width: 164px; height: 164px; border-radius: 50%; background: radial-gradient(circle at 50% 38%, #49364e, #262035 62%, #1a192b); border-color: #e1c39b99; box-shadow: 0 0 18px #e7ba8440, 0 0 48px #d7ac782b, 0 0 88px #a88be522, inset 0 0 24px #e4be8526; }
+.memo-integration-refined .memo-integration-flow-center::before { content: ""; position: absolute; inset: -7px; border: 1px solid #e6c59124; border-radius: 50%; pointer-events: none; }
+.memo-integration-refined .memo-integration-flow-center small { color: #c2bdd1; }
+.memo-integration-refined .memo-integration-flow-app { border-radius: 50%; background: #131626; border-color: #c2b7dc50; box-shadow: 0 8px 24px #0005, 0 0 16px #ada0d51a; }
+.memo-integration-refined:has(a:hover) .memo-integration-flow-app,
+.memo-integration-refined:focus-within .memo-integration-flow-app { animation-play-state: paused; }
+.memo-integration-refined a:focus-visible { outline: 2px solid #d5c2ff; outline-offset: 5px; }
+@media (max-width: 1100px) {
+  .memo-approved-copy h1 { font-size: 38px; }
+  .memo-approved-copy .memo-starlight-description { font-size: 16px; line-height: 1.6; }
+  .memo-approved-copy .memo-starlight-cta { padding-inline: 18px; font-size: 14px; }
+  .memo-approved-copy { top: 16%; }
+  .memo-hero-secondary { font-size: 14px; }
+  .memo-hero-proof { margin-top: 20px; gap: 8px; }
+  .memo-hero-proof li { font-size: 13px; padding: 6px 12px 6px 10px; }
+  .memo-integration-refined { --memo-flow-size: 340px; }
+  .memo-integration-refined .memo-integration-flow-center { width: 112px; height: 112px; }
+  .memo-integration-refined .memo-integration-flow-center img { width: 44px; height: 44px; }
+  .memo-integration-refined .memo-integration-flow-center small { font-size: 9px; }
+}
+@media (max-width: 760px) {
+  .memo-approved-hero { display: flex; flex-direction: column; aspect-ratio: auto; min-height: 0; }
+  .memo-approved-copy { position: relative; inset: auto; order: -1; padding: 30px 24px 0; text-align: center; }
+  .memo-approved-copy h1 { font-size: 32px; }
+  .memo-approved-art { position: relative; inset: auto; width: 100%; aspect-ratio: 1; margin-top: -10px; }
+  .memo-approved-art img { object-position: left center; }
+  .memo-approved-copy .memo-starlight-description { margin: 20px auto 24px; }
+  .memo-hero-actions, .memo-hero-proof { justify-content: center; }
+  .memo-integration-refined { --memo-flow-size: 320px; margin-block: 28px 0; }
+  .memo-integration-refined .memo-integration-flow-app { width: 54px; height: 54px; margin: -27px 0 0 -27px; padding: 12px; }
+  .memo-integration-refined .memo-integration-flow-app svg { width: 28px; height: 28px; }
+}
+@media (max-width: 370px) {
+  .memo-integration-refined { --memo-flow-size: 266px; }
+  .memo-approved-copy h1 { font-size: 28px; }
+}

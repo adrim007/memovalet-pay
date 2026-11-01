@@ -1,0 +1,49 @@
+/* Public-page atmosphere only: no dashboard, copy or meeting-preview overrides. */
+.memo-marketing-stage .memo-marketing-shell,
+.memo-home-stage .memo-home-lower {
+  background:
+    radial-gradient(ellipse 70% 680px at 100% 12%, #6544b73d, transparent 75%),
+    radial-gradient(ellipse 60% 900px at 0% 52%, #275aa13b, transparent 72%),
+    radial-gradient(ellipse 70% 650px at 85% 92%, #79529730, transparent 75%),
+    linear-gradient(160deg, #11182f, #151229 45%, #101c32);
+}
+.memo-home-stage .memo-home-shell .mf-space-hero {
+  background: linear-gradient(135deg, #11192e, #17132f 65%, #162844);
+}
+.memo-home-stage .memo-home-shell .mf-space-backdrop { opacity: .3; }
+.memo-home-stage .memo-home-shell .mf-space-shade {
+  background:
+    radial-gradient(ellipse at 80% 26%, #8b5bd132, transparent 52%),
+    linear-gradient(180deg, transparent 70%, #11182f);
+}
+.memo-marketing-stage .memo-marketing-constellation,
+.memo-home-stage .memo-page-constellation { opacity: 1; }
+.memo-marketing-shell .mk-grid-fade { opacity: .32; }
+.memo-marketing-shell .memo-solutions-glow,
+.memo-marketing-shell .memo-resources-orbit {
+  inset: 5% 0;
+  background: radial-gradient(ellipse, #9a72eb42, #5b6cdf1a 48%, transparent 72%);
+  box-shadow: none;
+}
+.memo-marketing-shell .memo-solutions-glow::after,
+.memo-marketing-shell .memo-resources-orbit::after {
+  inset: 21% 2%;
+  transform: rotate(-18deg);
+  border-color: #bc9de980;
+  box-shadow: 0 0 24px #a07ce91c;
+}
+.memo-marketing-shell .memo-solutions-elephant,
+.memo-marketing-shell .memo-resources-elephant { width: 330px; height: 330px; }
+.memo-marketing-shell .memo-solutions-chip,
+.memo-marketing-shell .memo-resource-float-card {
+  background: linear-gradient(130deg, #242340f5, #141c34f5);
+  border-color: #ac98df66;
+  box-shadow: 0 14px 34px #05091d3d, inset 0 1px 0 #ffffff14;
+}
+.memo-marketing-shell .memo-solutions-chip small,
+.memo-marketing-shell .memo-resource-float-card small { color: #c3c4da; }
+.memo-marketing-shell .memo-solutions-chip:first-of-type { top: 12%; }
+@media (max-width: 639px) {
+  .memo-marketing-shell .memo-solutions-elephant,
+  .memo-marketing-shell .memo-resources-elephant { width: 270px; height: 270px; }
+}

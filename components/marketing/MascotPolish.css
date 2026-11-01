@@ -1,0 +1,42 @@
+/* Mascot-only polish. Keep the meeting preview, copy and existing controls intact. */
+.landing-elephant-stage { isolation: isolate; }
+.landing-elephant-stage .landing-elephant-tilt {
+  --elephant-pitch: 0deg;
+  --elephant-yaw: 0deg;
+  transform: translate3d(var(--elephant-x), var(--elephant-y), 0) rotateX(var(--elephant-pitch)) rotateY(var(--elephant-yaw)) rotateZ(var(--elephant-turn));
+}
+.landing-elephant-stage .landing-elephant-bob { animation-duration: 7s; }
+.landing-elephant-bob img { mask-image: linear-gradient(transparent, black 8%, black 92%, transparent); }
+.memo-home-shell .mf-elephant-scene .mf-orbit-asset {
+  /* Share the mascot's centre instead of stretching to the scene's edges. */
+  inset: 30px auto auto 4% !important;
+  width: 100% !important;
+  height: 380px !important;
+  object-fit: contain;
+  animation: none;
+  transform: none;
+  opacity: .42;
+  filter: saturate(.62);
+}
+.memo-home-shell .mf-elephant-scene .mf-hero-elephant {
+  width: 380px;
+  height: 380px;
+  top: 32px;
+  left: 54%;
+  filter: drop-shadow(0 18px 28px rgba(119, 82, 255, .18));
+}
+.memo-home-shell .mf-elephant-scene .mf-translation-card { left: 30px; }
+.memo-home-shell .mf-elephant-scene .mf-ask-card { right: 0; }
+.memo-home-shell .mf-elephant-scene .mf-action-card { right: -18px; }
+@media (max-width: 540px) {
+  .memo-home-shell .mf-elephant-scene { min-height: 620px; transform: none; }
+  .memo-home-shell .mf-elephant-scene .mf-hero-elephant { width: 300px; height: 300px; top: 90px; left: 50%; }
+  .memo-home-shell .mf-elephant-scene .mf-orbit-asset { inset: 90px auto auto 0 !important; height: 300px !important; }
+  .memo-home-shell .mf-elephant-scene .mf-ask-card { top: 0; }
+  .memo-home-shell .mf-elephant-scene .mf-action-card { right: 0; top: 420px; width: 46%; }
+  .memo-home-shell .mf-elephant-scene .mf-translation-card { left: 0; top: 370px; width: 48%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-elephant-stage .landing-elephant-tilt { transform: none; transition: none; }
+  .landing-elephant-stage .landing-elephant-bob { animation: none; }
+}

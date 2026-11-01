@@ -1,0 +1,10 @@
+.env*
+.next
+node_modules
+MASCOT-HANDOFF.md
+POLISH-HANDOFF.md
+DEPLOYMENT.md
+DASHBOARD-HANDOFF.md
+WORKSPACE-RELIABILITY-HANDOFF.md
+tests
+media-src
