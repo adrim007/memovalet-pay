@@ -29,14 +29,16 @@ async function callTool<T>(name: string, args: Record<string, unknown> = {}): Pr
   }
 }
 
-// Asks the AI assistant. Returns null when no AI key is set, so the page can call the tools itself.
-async function askAssistant(text: string, conversationId: string, approvalToken?: string): Promise<Turn | null> {
+// Asks the AI assistant. Returns null when no AI key is set and "busy" when the model can't answer
+// just now, so the page can call the tools itself and say so.
+async function askAssistant(text: string, conversationId: string, approvalToken?: string): Promise<Turn | "busy" | null> {
   const res = await fetch("/api/paypal/assistant", {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text, conversationId: conversationId || undefined, approvalToken }),
   });
   const data = await res.json().catch(() => ({}));
   if (res.status === 503 && data.noAi) return null;
+  if (res.status === 429 || res.status === 502) return "busy";
   if (!res.ok) throw new Error(data.error ?? "The assistant couldn't answer.");
   return data as Turn;
 }
@@ -54,8 +56,9 @@ export default function PayPreview() {
   const [aiOff, setAiOff] = useState(false);
   const [request, setRequest] = useState(SUGGESTION);
   const statusRef = useRef<HTMLDivElement>(null);
+  const runId = useRef("");
 
-  const say = (who: Line["who"], text: string) => setLines(current => [...current, { who, text }]);
+  const say =(who: Line["who"], text: string) => setLines(current => [...current, { who, text }]);
 
   async function run(label: string, work: () => Promise<void>) {
     setBusy(label); setError("");
@@ -68,24 +71,36 @@ export default function PayPreview() {
     setTimeout(() => statusRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
   }
 
+  function showStatus(latest: Invoice) {
+    setInvoice(latest);
+    if (latest.status === "PAID" || latest.status === "MARKED_AS_PAID") setReminder(null);
+  }
+
   // The cards come from the tools the assistant called, so the screen shows exactly what MemoValet returned.
   function show(cards: Card[]) {
     for (const { tool, data } of cards) {
       if (tool === "propose_invoice") { setProposal(data as unknown as Proposal); setStep("proposed"); }
       if (tool === "send_invoice") showSent(data as unknown as { invoice: Invoice; approvedAt: string });
-      if (tool === "invoice_status") setInvoice((data as { invoice: Invoice }).invoice);
+      if (tool === "invoice_status") showStatus((data as { invoice: Invoice }).invoice);
       if (tool === "draft_payment_reminder") setReminder((data as { reminder: Reminder }).reminder);
     }
+  }
+
+  function startAgain() {
+    runId.current = ""; setStep("start"); setProposal(null); setInvoice(null); setReminder(null); setApprovedAt("");
+    setLines([]); setConversationId(""); setError(""); setRequest(SUGGESTION);
   }
 
   async function converse(text: string, direct: () => Promise<void>, approvalToken?: string) {
     say("you", text);
     const turn = aiOff ? null : await askAssistant(text, conversationId, approvalToken);
-    if (turn) {
+    if (turn && turn !== "busy") {
       setConversationId(turn.conversationId); show(turn.cards); say("ai", turn.reply);
       return;
     }
-    if (!aiOff) {
+    if (turn === "busy") {
+      say("note", "The AI is too busy to answer right now, so this page is calling the MemoValet tools itself for this step.");
+    } else if (!aiOff) {
       setAiOff(true);
       say("note", "No AI key is set, so this page is calling the MemoValet tools itself. Add GEMINI_API_KEY to .env.local to let the assistant do it.");
     }
@@ -104,9 +119,10 @@ export default function PayPreview() {
 
   const approveAndSend = () => run("Sending in the PayPal sandbox", async () => {
     if (!proposal) return;
+    runId.current ||= crypto.randomUUID();
     const res = await fetch("/api/paypal/approve", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ proposalId: proposal.proposalId, total: proposal.total, payerEmail: proposal.draft.payerEmail }),
+      body: JSON.stringify({ proposalId: proposal.proposalId, draft: proposal.draft, runId: runId.current }),
     });
     const approval = await res.json();
     if (!res.ok) throw new Error(approval.error ?? "Approval failed.");
@@ -116,7 +132,7 @@ export default function PayPreview() {
   });
 
   const refresh = () => run("Checking PayPal", () => invoice ? converse(`Has invoice ${invoice.id} been paid?`, async () => {
-    setInvoice((await callTool<{ invoice: Invoice }>("invoice_status", { invoiceId: invoice.id })).invoice);
+    showStatus((await callTool<{ invoice: Invoice }>("invoice_status", { invoiceId: invoice.id })).invoice);
   }) : Promise.resolve());
 
   const remind = () => run("Writing a reminder", () => invoice ? converse(`Draft a payment reminder for invoice ${invoice.id}.`, async () => {
@@ -156,6 +172,9 @@ export default function PayPreview() {
                 {busy || "Ask"}
               </button>
             </form>
+          )}
+          {step !== "start" && (
+            <button type="button" onClick={startAgain} disabled={!!busy} className="rounded-full border border-[var(--surface-border)] px-4 py-2 text-sm font-semibold">Start again</button>
           )}
         </section>
 

@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { checkApproval, spendApproval } from "@/lib/paypal/approval";
+import { checkApproval, invoiceNumber, spendApproval } from "@/lib/paypal/approval";
 import { createPayPalClient } from "@/lib/paypal/client";
 import { draftPaymentReminder, proposeInvoice, sampleMeeting } from "@/lib/paypal/invoice-flow";
 
@@ -32,8 +32,9 @@ export function buildPayServer(paypal = () => createPayPalClient()) {
     if (!spendApproval(approvalToken!, gate.approval)) return refuse("Not sent again. This approval was already used to send the invoice. Check its status instead.");
     try {
       const client = paypal();
-      const draft = await client.createDraft(proposal.draft);
-      const sent = await client.send(draft.id);
+      const number = invoiceNumber(gate.approval);
+      const invoice = await client.findByNumber(number) ?? await client.createDraft(proposal.draft, number);
+      const sent = invoice.status === "DRAFT" ? await client.send(invoice.id) : invoice;
       return content({ invoice: sent, approvedAt: gate.approval.approvedAt, sandbox: true });
     } catch (error) {
       return refuse(error instanceof Error ? error.message : "PayPal sandbox call failed.");

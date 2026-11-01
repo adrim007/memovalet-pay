@@ -22,6 +22,7 @@ function compile(file){
 const route=compile("app/api/paypal/mcp/route.ts");
 const assistant=compile("lib/paypal/assistant.ts");
 const approval=compile("lib/paypal/approval.ts");
+const approveRoute=compile("app/api/paypal/approve/route.ts");
 const flow=compile("lib/paypal/invoice-flow.ts");
 const ORIGIN="http://localhost:3000";
 // Values made inside the sandbox are copied out before comparing, since deepEqual checks prototypes.
@@ -41,6 +42,7 @@ function harness(script){
   }
   if(url.hostname==="api-m.sandbox.paypal.com"){
    if(url.pathname==="/v1/oauth2/token")return Response.json({access_token:"tok",expires_in:300});
+   if(url.pathname==="/v2/invoicing/search-invoices"){const number=JSON.parse(init.body).invoice_number;return Response.json({items:created.filter(item=>item.detail.invoice_number===number).map(item=>({id:"INV2-TEST",detail:item.detail}))});}
    if(url.pathname==="/v2/invoicing/invoices"&&init.method==="POST"){created.push(JSON.parse(init.body));return Response.json({id:"INV2-TEST",status:"DRAFT"},{status:201});}
    if(url.pathname.endsWith("/send"))return Response.json({},{status:202});
    return Response.json({id:"INV2-TEST",status:"UNPAID",amount:{currency_code:"AUD",value:"500.00"},primary_recipients:[{billing_info:{email_address:"sam@harbourbakery.example"}}],detail:{payment_term:{due_date:"2026-11-03"}}});
@@ -118,3 +120,23 @@ test("when Gemini stays busy the assistant stops after three tries and says so",
   assert.equal(h.modelRequests.length,3);
   assert.equal(h.created.length,0);
  }));
+
+test("if the model fails after the invoice went out, the screen still gets the invoice",()=>withHarness(
+ [call("send_invoice",{proposalId}),{busy:503},{busy:503},{busy:503}],
+ async h=>{
+  const p=flow.proposeInvoice({});
+  const turn=await ask("I've approved the invoice on the card. Please send it.",{approvalToken:approval.approve(p.proposalId,p.draft)});
+  assert.equal(h.created.length,1);
+  assert.deepEqual(plain(turn.cards.map(card=>card.tool)),["send_invoice"]);
+  assert.match(turn.reply,/on the screen/);
+ }));
+
+test("the approve route needs the exact invoice on the card, from this page, in a run",async()=>{
+ const p=flow.proposeInvoice({});
+ const post=(body,origin=ORIGIN)=>approveRoute.POST(new Request(ORIGIN+"/api/paypal/approve",{method:"POST",headers:{"Content-Type":"application/json",...(origin?{Origin:origin}:{})},body:JSON.stringify(body)}));
+ const good={proposalId:p.proposalId,draft:plain(p.draft),runId:"run-route-test"};
+ assert.equal((await post(good)).status,200);
+ assert.equal((await post(good,"https://other.example")).status,403);
+ assert.equal((await post({...good,runId:undefined})).status,400);
+ assert.equal((await post({...good,draft:{...good.draft,dueDate:"2030-01-01"}})).status,409,"a due date the person never saw is not approved");
+});

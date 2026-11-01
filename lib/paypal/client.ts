@@ -54,7 +54,7 @@ export function createPayPalClient(options: { config?: PayPalConfig; fetcher?: F
   type PayPalInvoice = {
     id: string; status: string; amount?: Money;
     primary_recipients?: { billing_info?: { email_address?: string } }[];
-    detail?: { payment_term?: { due_date?: string }; metadata?: { recipient_view_url?: string } };
+    detail?: { invoice_number?: string; payment_term?: { due_date?: string }; metadata?: { recipient_view_url?: string } };
   };
 
   function summary(invoice: PayPalInvoice): InvoiceStatus {
@@ -70,11 +70,16 @@ export function createPayPalClient(options: { config?: PayPalConfig; fetcher?: F
 
   return {
     token,
-    async createDraft(draft: InvoiceDraft): Promise<InvoiceStatus> {
+    async findByNumber(invoiceNumber: string): Promise<InvoiceStatus | null> {
+      const page = await call("/v2/invoicing/search-invoices?page=1&page_size=5", { method: "POST", body: JSON.stringify({ invoice_number: invoiceNumber }) });
+      const match = (page.items ?? []).find((item: PayPalInvoice) => item.detail?.invoice_number === invoiceNumber);
+      return match ? summary(await call(`/v2/invoicing/invoices/${encodeURIComponent(match.id)}`)) : null;
+    },
+    async createDraft(draft: InvoiceDraft, invoiceNumber?: string): Promise<InvoiceStatus> {
       const invoice = await call("/v2/invoicing/invoices", {
         method: "POST",
         body: JSON.stringify({
-          detail: { currency_code: draft.currency, note: draft.note, payment_term: { due_date: draft.dueDate } },
+          detail: { currency_code: draft.currency, note: draft.note, payment_term: { due_date: draft.dueDate }, ...(invoiceNumber ? { invoice_number: invoiceNumber } : {}) },
           primary_recipients: [{ billing_info: { email_address: draft.payerEmail } }],
           items: draft.items.map(item => ({
             name: item.name, quantity: String(item.quantity),

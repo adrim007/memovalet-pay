@@ -1,4 +1,4 @@
-import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import type { InvoiceDraft } from "@/lib/paypal/client";
 
 // The money step needs a person. The AI may propose an invoice, but sending needs an approval
@@ -8,7 +8,7 @@ import type { InvoiceDraft } from "@/lib/paypal/client";
 export const APPROVAL_MINUTES = 15;
 const secret = process.env.MEMOVALET_APPROVAL_SECRET?.trim() || randomBytes(32).toString("hex");
 
-export type Approval = { proposalId: string; payerEmail: string; currency: string; total: string; items: string; dueDate: string; approvedAt: string; expires: number };
+export type Approval = { proposalId: string; run: string; payerEmail: string; currency: string; total: string; items: string; dueDate: string; approvedAt: string; expires: number };
 
 const b64 = (value: string | Buffer) => Buffer.from(value).toString("base64url");
 const sign = (body: string) => createHmac("sha256", secret).update(body).digest("base64url");
@@ -22,9 +22,10 @@ export function itemsKey(draft: InvoiceDraft) {
   return draft.items.map(item => `${item.quantity}x${item.unitAmount} ${item.name}`).join("|");
 }
 
-export function approve(proposalId: string, draft: InvoiceDraft, now = Date.now()): string {
+// `run` is one go through the flow on the screen. Tapping Approve again in the same run keeps it.
+export function approve(proposalId: string, draft: InvoiceDraft, now = Date.now(), run: string = randomUUID()): string {
   const approval: Approval = {
-    proposalId, payerEmail: draft.payerEmail.toLowerCase(), currency: draft.currency, total: totalOf(draft),
+    proposalId, run, payerEmail: draft.payerEmail.toLowerCase(), currency: draft.currency, total: totalOf(draft),
     items: itemsKey(draft), dueDate: draft.dueDate, approvedAt: new Date(now).toISOString(), expires: now + APPROVAL_MINUTES * 60_000,
   };
   const body = b64(JSON.stringify(approval));
@@ -36,9 +37,10 @@ export type GateResult = { ok: true; approval: Approval } | { ok: false; reason:
 // Refuses unless the token is genuine, unexpired, and matches the invoice exactly.
 export function checkApproval(token: string | undefined, proposalId: string, draft: InvoiceDraft, now = Date.now()): GateResult {
   if (!token) return { ok: false, reason: "Not sent. The person has not approved this invoice. Show the invoice card and wait for Approve." };
-  const [body, mac] = token.split(".");
+  const parts = token.split(".");
+  const [body, mac] = parts;
   const expected = body ? sign(body) : "";
-  if (!body || !mac || mac.length !== expected.length || !timingSafeEqual(Buffer.from(mac), Buffer.from(expected))) {
+  if (parts.length !== 2 || !body || !mac || mac.length !== expected.length || !timingSafeEqual(Buffer.from(mac), Buffer.from(expected))) {
     return { ok: false, reason: "Not sent. The approval is not valid." };
   }
   const approval = JSON.parse(Buffer.from(body, "base64url").toString()) as Approval;
@@ -59,4 +61,10 @@ export function spendApproval(token: string, approval: Approval, now = Date.now(
   if (spent.has(token)) return false;
   spent.set(token, approval.expires);
   return true;
+}
+
+// The same run always gets the same invoice number, and PayPal refuses a number it has seen. So a
+// retry, a second tap or a restart finds the first invoice instead of billing the payer again.
+export function invoiceNumber(approval: Approval) {
+  return `MV${createHash("sha256").update(`${approval.run}|${approval.proposalId}`).digest("hex").slice(0, 16).toUpperCase()}`;
 }

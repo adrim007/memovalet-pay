@@ -1,6 +1,6 @@
 # MemoValet Pay
 
-MemoValet Pay turns what was agreed in a meeting into a PayPal invoice. An AI assistant reads the meeting, finds the payment that was agreed and drafts the invoice. Then it stops. Nothing goes out until a person approves the exact amount and payer. The invoice is then sent through the PayPal sandbox and tracked until it is paid.
+MemoValet Pay turns what was agreed in a meeting into a PayPal invoice. An AI assistant works out which tool to use, proposes the invoice agreed in the meeting, and then stops. Nothing goes out until a person approves the exact amount and payer. The invoice is then sent through the PayPal sandbox, and its status is read back from PayPal.
 
 Built for the PayPal AI Hackathon. It uses the PayPal sandbox only, so all the money here is test money. The sample meeting, people and businesses are fictional.
 
@@ -11,14 +11,22 @@ Freelancers and small studios agree on paid work in a meeting ("I'll send the de
 ## How it works
 
 1. You ask the assistant to bill what was agreed in the sample meeting.
-2. The assistant calls `propose_invoice`. This is a draft, and it creates nothing in PayPal.
+2. The assistant calls `propose_invoice`, which returns the payment stored with the fictional sample meeting. This is a draft, and it creates nothing in PayPal.
 3. A card shows the payer, amount, due date and the line of the meeting it came from.
-4. You tap **Approve and send**. That tap creates a signed approval for this exact invoice. It lasts 15 minutes and works once.
+4. You tap **Approve and send**. That tap creates a signed approval for this exact invoice, which lasts 15 minutes.
 5. The assistant calls `send_invoice`. MemoValet creates the invoice with PayPal's Invoicing API and sends it.
-6. `invoice_status` reads the status back from PayPal, so you can see when the buyer has paid.
+6. `invoice_status` reads the status back from PayPal.
 7. If it is unpaid after its due date, `draft_payment_reminder` writes a polite reminder. It stays a draft.
 
-The AI can read and propose. It cannot approve money going out. The model is never shown the approval token, and the server refuses `send_invoice` without a valid one.
+The AI can propose, but it has no tool that approves money going out. The model is never shown the approval token, and the server refuses `send_invoice` without a valid one. One run of the flow can only make one invoice: each run has its own invoice number, and PayPal refuses a number it has seen, so a retry or a second tap finds the first invoice instead of billing again.
+
+If the AI is too busy to answer, the screen says so and calls the tools itself for that step, so you can still finish.
+
+## Limits of this demo
+
+* It works from one fictional sample meeting. The payment details are stored with that meeting, so the AI chooses the tools and explains the result, but it does not work out the amount.
+* It has no sign in, because it runs on your own computer with sample data. The AI can't reach the approve route, but another program on the same computer could call it directly. A real product would tie each approval to a signed in owner.
+* Overdue reminders have only been tested against a pretend PayPal.
 
 ## Run it
 
@@ -58,7 +66,8 @@ Then open http://localhost:3000/preview/pay and try this:
 1. Press **Ask** to send the suggested request.
 2. Check the invoice card, then press **Approve and send**.
 3. Press **Open the invoice as the buyer sees it**, and pay it while signed in to your sandbox personal account.
-4. Press **Check if it's paid**. The status changes to PAID.
+4. Press **Check if it's paid** to read the latest status from PayPal.
+5. Press **Start again** for a fresh run.
 
 ## Use the MCP server directly
 
@@ -89,7 +98,7 @@ Its four tools:
 
 * `lib/paypal/client.ts` is the PayPal client: sandbox token, create draft invoice, send, read status.
 * `lib/paypal/sandbox.ts` refuses anything but the sandbox.
-* `lib/paypal/approval.ts` is the approval gate: a signed token for one payer, currency, total, item list and due date.
+* `lib/paypal/approval.ts` is the approval gate: a signed token for one payer, currency, total, item list and due date, and the invoice number for each run.
 * `lib/paypal/mcp-server.ts` is the MCP server, built with the official MCP TypeScript SDK.
 * `lib/paypal/assistant.ts` is the assistant: an MCP client that gives the tools to the model through function calling. It uses Gemini by default, or Claude if `ANTHROPIC_API_KEY` is set instead.
 * `lib/paypal/invoice-flow.ts` holds the fictional sample meeting, the proposal and the reminder.
@@ -101,7 +110,7 @@ Its four tools:
 node --test tests/paypal.test.cjs tests/paypal_assistant.test.cjs
 ```
 
-These run against a pretend PayPal, so they need no keys. They cover the sandbox only rule, every way the approval gate can refuse, one tap sending one invoice, and the model never seeing the token.
+These run against a pretend PayPal, so they need no keys. They cover the sandbox only rule, the main ways the approval gate refuses, one run making one invoice, recovery after a failed send, and the model never seeing the token.
 
 ## What is new since 1 October 2026
 

@@ -76,7 +76,11 @@ export async function runPayAssistantTurn(options: {
       const text = (result.content as { type: string; text?: string }[] | undefined)?.find(block => block.type === "text")?.text;
       return { text: text ?? JSON.stringify(data ?? {}), data, isError: Boolean(result.isError) };
     };
-    const turn = await runModelTurn(using, SYSTEM, same ? saved.messages : [], options.text, tools, callTool);
+    const turn = await runModelTurn(using, SYSTEM, same ? saved.messages : [], options.text, tools, callTool).catch(error => {
+      // A tool may already have sent the invoice, so the screen must still show what it returned.
+      if (cards.length === 0) throw error;
+      return { reply: "That's done, and the details are on the screen. I couldn't write a reply just now.", messages: same ? saved.messages : [] };
+    });
     remember(conversationId, using, turn.messages);
     return { conversationId, reply: withoutDashes(turn.reply || "Done. The details are on the screen."), cards };
   } finally {

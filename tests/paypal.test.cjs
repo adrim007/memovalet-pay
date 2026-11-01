@@ -94,8 +94,10 @@ async function connect(fake) {
 function fakePayPal(status="UNPAID",due="2026-11-03") {
  const made=[];
  return {made,
-  createDraft:async d=>{made.push(d);return {id:"INV2-TEST",status:"DRAFT"};},
-  send:async id=>({id,status:"UNPAID",amount:{currency_code:"AUD",value:"500.00"}}),
+  numbers:{},
+  findByNumber:async function(n){return this.numbers[n]??null;},
+  createDraft:async function(d,n){made.push(d);this.numbers[n]={id:"INV2-TEST",status:"DRAFT"};return this.numbers[n];},
+  send:async function(id){const sent={id,status:"UNPAID",amount:{currency_code:"AUD",value:"500.00"}};for(const n in this.numbers)this.numbers[n]=sent;return sent;},
   status:async id=>({id,status,dueDate:due,amount:{currency_code:"AUD",value:"500.00"},payerEmail:"sam@harbourbakery.example",href:"https://www.sandbox.paypal.com/invoice/p/#INV2-TEST"})};
 }
 
@@ -120,6 +122,40 @@ test("MCP: with the person's approval the invoice is created and sent, and statu
  assert.equal(fake.made.length,1);assert.equal(fake.made[0].payerEmail,p.draft.payerEmail);
  const status=await c.callTool({name:"invoice_status",arguments:{invoiceId:"INV2-TEST"}});
  assert.equal(status.structuredContent.invoice.status,"PAID");
+});
+
+test("approval gate: extra text on a token is refused, so it can't pass as a new approval",()=>{
+ const p=flow.proposeInvoice({});
+ const token=approval.approve(p.proposalId,p.draft);
+ assert.match(approval.checkApproval(token+".extra",p.proposalId,p.draft).reason,/not valid/);
+});
+
+test("one run makes one invoice: a second tap or a restart finds the first invoice",async()=>{
+ const fake=fakePayPal();const c=await connect(fake);
+ const p=flow.proposeInvoice({});
+ const tap=()=>approval.approve(p.proposalId,p.draft,Date.now(),"run-one-test");
+ const first=await c.callTool({name:"send_invoice",arguments:{proposalId:p.proposalId,approvalToken:tap()}});
+ const second=await c.callTool({name:"send_invoice",arguments:{proposalId:p.proposalId,approvalToken:approval.approve(p.proposalId,p.draft,Date.now()+5,"run-one-test")}});
+ assert.equal(first.structuredContent.invoice.status,"UNPAID");
+ assert.equal(second.isError,undefined);
+ assert.equal(second.structuredContent.invoice.id,"INV2-TEST");
+ assert.equal(fake.made.length,1,"PayPal got one invoice");
+ const other=await c.callTool({name:"send_invoice",arguments:{proposalId:p.proposalId,approvalToken:approval.approve(p.proposalId,p.draft,Date.now(),"run-two-test")}});
+ assert.equal(other.isError,undefined);
+ assert.equal(fake.made.length,2,"a new run is a new invoice");
+});
+
+test("a draft left behind by a failed send is sent, not made again",async()=>{
+ const fake=fakePayPal();const c=await connect(fake);
+ const p=flow.proposeInvoice({});
+ const failingSend=fake.send;let fail=true;
+ fake.send=async function(id){if(fail){fail=false;throw new Error("PayPal sandbox said 500: request failed");}return failingSend.call(this,id);};
+ const tap=at=>approval.approve(p.proposalId,p.draft,at,"run-retry-test");
+ const failed=await c.callTool({name:"send_invoice",arguments:{proposalId:p.proposalId,approvalToken:tap(Date.now())}});
+ assert.equal(failed.isError,true);
+ const retried=await c.callTool({name:"send_invoice",arguments:{proposalId:p.proposalId,approvalToken:tap(Date.now()+5)}});
+ assert.equal(retried.structuredContent.invoice.status,"UNPAID");
+ assert.equal(fake.made.length,1);
 });
 
 test("reminder: drafts for an unpaid invoice past its due date and never sends",async()=>{
